@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<!-- saved from url=(0040)http://bl.ocks.org/mbostock/raw/4341417/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta charset="utf-8">
+</head><body>
+<script src="./4341417_files/d3.v3.min.js"></script>
+<script>
+
+var width = 960,
+    height = 500,
+    outerRadius = Math.min(width, height) * .5 - 10,
+    innerRadius = outerRadius * .6;
+
+var n = 8,
+    data0 = d3.range(n).map(Math.random),
+    data1 = d3.range(n).map(Math.random),
+    data;
+
+var color = d3.scale.category20();
+
+var arc = d3.svg.arc();
+
+var pie = d3.layout.pie()
+    .sort(null);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+svg.selectAll(".arc")
+    .data(arcs(data0, data1))
+  .enter().append("g")
+    .attr("class", "arc")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+  .append("path")
+    .attr("fill", function(d, i) { return color(i); })
+    .attr("d", arc);
+
+transition(3);
+
+function arcs(data0, data1) {
+  var arcs0 = pie(data0),
+      arcs1 = pie(data1),
+      i = -1,
+      arc;
+  while (++i < n) {
+    arc = arcs0[i];
+    arc.innerRadius = innerRadius;
+    arc.outerRadius = outerRadius;
+    arc.next = arcs1[i];
+  }
+  return arcs0;
+}
+
+function transition(state) {
+  var path = d3.selectAll(".arc > path")
+      .data(state ? arcs(data0, data1) : arcs(data1, data0));
+
+  // Wedges split into two rings.
+  var t0 = path.transition()
+      .duration(1000)
+      .attrTween("d", tweenArc(function(d, i) {
+        return {
+          innerRadius: i & 1 ? innerRadius : (innerRadius + outerRadius) / 2,
+          outerRadius: i & 1 ? (innerRadius + outerRadius) / 2 : outerRadius
+        };
+      }));
+
+  // Wedges translate to be centered on their final position.
+  var t1 = t0.transition()
+      .attrTween("d", tweenArc(function(d, i) {
+        var a0 = d.next.startAngle + d.next.endAngle,
+            a1 = d.startAngle - d.endAngle;
+        return {
+          startAngle: (a0 + a1) / 2,
+          endAngle: (a0 - a1) / 2
+        };
+      }));
+
+  // Wedges then update their values, changing size.
+  var t2 = t1.transition()
+        .attrTween("d", tweenArc(function(d, i) {
+          return {
+            startAngle: d.next.startAngle,
+            endAngle: d.next.endAngle
+          };
+        }));
+
+  // Wedges reunite into a single ring.
+  var t3 = t2.transition()
+      .attrTween("d", tweenArc(function(d, i) {
+        return {
+          innerRadius: innerRadius,
+          outerRadius: outerRadius
+        };
+      }));
+
+  setTimeout(function() { transition(!state); }, 5000);
+}
+
+function tweenArc(b) {
+  return function(a, i) {
+    var d = b.call(this, a, i), i = d3.interpolate(a, d);
+    for (var k in d) a[k] = d[k]; // update data
+    return function(t) { return arc(i(t)); };
+  };
+}
+
+</script><svg width="960" height="500"><g class="arc" transform="translate(480,250)"><path fill="#1f77b4" d="M15.365826011112215,-239.50760194823928A240,240 0 0,1 148.32373360223605,-188.67980827394572L118.65898688178883,-150.94384661915657A192,192 0 0,0 12.292660808889773,-191.60608155859143Z"></path></g><g class="arc" transform="translate(480,250)"><path fill="#aec7e8" d="M157.81360584374642,-109.35659930061217A192,192 0 0,1 170.9645015261075,-87.37928368858138L128.22337614458064,-65.53446276643604A144,144 0 0,0 118.3602043828098,-82.01744947545913Z"></path></g><g class="arc" transform="translate(480,250)"><path fill="#ff7f0e" d="M235.26225212616745,-47.451793691320155A240,240 0 0,1 239.48895575583282,-15.653755810691232L191.59116460466626,-12.523004648552984A192,192 0 0,0 188.20980170093398,-37.96143495305613Z"></path></g><g class="arc" transform="translate(480,250)"><path fill="#ffbb78" d="M185.4453511352903,-49.739539023888A192,192 0 0,1 165.4916898127361,97.34731944396381L124.11876735955207,73.01048958297287A144,144 0 0,0 139.08401335146772,-37.304654267916Z"></path></g><g class="arc" transform="translate(480,250)"><path fill="#2ca02c" d="M239.95025131983056,4.886398627839522A240,240 0 0,1 112.89491956949384,211.78936974125384L90.31593565559507,169.43149579300305A192,192 0 0,0 191.96020105586445,3.9091189022716177Z"></path></g><g class="arc" transform="translate(480,250)"><path fill="#98df8a" d="M92.58091830734622,168.20455869377764A192,192 0 0,1 21.755761896667398,190.76343156982554L16.31682142250055,143.07257367736915A144,144 0 0,0 69.43568873050967,126.15341902033323Z"></path></g><g class="arc" transform="translate(480,250)"><path fill="#d62728" d="M-64.91020850324804,231.0555449065546A240,240 0 0,1 -93.54236718392426,221.01996638681288L-74.83389374713941,176.81597310945028A192,192 0 0,0 -51.92816680259844,184.84443592524366Z"></path></g><g class="arc" transform="translate(480,250)"><path fill="#ff9896" d="M-118.92535084435389,150.7340735419412A192,192 0 0,1 -185.48494952912864,49.591667628509974L-139.11371214684647,37.19375072138248A144,144 0 0,0 -89.19401313326541,113.0505551564559Z"></path></g><g class="arc" transform="translate(480,250)"><path fill="#9467bd" d="M-236.18852351679195,42.602598030611006A240,240 0 0,1 -162.49352538024237,-176.62348147825796L-129.9948203041939,-141.29878518260637A192,192 0 0,0 -188.95081881343356,34.0820784244888Z"></path></g><g class="arc" transform="translate(480,250)"><path fill="#c5b0d5" d="M-171.09215309127882,-87.12907178772429A192,192 0 0,1 56.07676088778597,-183.6284206987962L42.05757066583948,-137.72131552409715A144,144 0 0,0 -128.31911481845913,-65.34680384079321Z"></path></g></svg>
+</body></html>
